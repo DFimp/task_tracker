@@ -38,6 +38,14 @@ const initialTasks: Task[] = [
 const TasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
     if (!destination || source.index === destination.index) return;
@@ -59,10 +67,125 @@ const TasksPage: React.FC = () => {
     setTasks((prev) => prev.filter((task) => task.id !== id));
   };
 
+  const handleAddTask = () => {
+    if (!newTitle.trim()) return;
+    const newTask: Task = {
+      id: Date.now().toString(),
+      title: newTitle,
+      description: newDescription,
+      completed: false,
+    };
+    setTasks((prev) => [newTask, ...prev]);
+    setNewTitle("");
+    setNewDescription("");
+    setModalOpen(false);
+  };
+
+  const handleEditClick = (task: Task) => {
+    setEditingTask(task);
+    setEditTitle(task.title);
+    setEditDescription(task.description);
+  };
+
+  const handleUpdateTask = () => {
+    if (!editingTask) return;
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === editingTask.id
+          ? { ...task, title: editTitle, description: editDescription }
+          : task
+      )
+    );
+    setEditingTask(null);
+  };
+
+  const handleEditClose = () => {
+    setEditingTask(null);
+  };
+
   return (
     <div className={styles.pageTasksList}>
       <h2>Список задач</h2>
-      <span>Чем выше задача тем больше у неё приоритет</span>
+      <span>Чем выше задача, тем выше приоритет</span>
+
+      <button onClick={() => setModalOpen(true)} className={styles.btn__add}>
+        Добавить задачу
+      </button>
+
+      {isModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3>Новая задача</h3>
+            <input
+              type="text"
+              placeholder="Название"
+              value={newTitle}
+              className={styles.input}
+              onChange={(e) => setNewTitle(e.target.value)}
+            />
+            <textarea
+              placeholder="Описание"
+              value={newDescription}
+              onChange={(e) => setNewDescription(e.target.value)}
+              className={styles.textarea}
+            />
+            <div className={styles.modalButtons}>
+              <button
+                onClick={() => setModalOpen(false)}
+                className={styles.btn__add}
+                style={{ width: 150, backgroundColor: "red" }}
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleAddTask}
+                className={styles.btn__add}
+                style={{ width: 150 }}
+              >
+                Добавить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingTask && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3>Редактировать задачу</h3>
+            <input
+              type="text"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className={styles.input}
+              placeholder="Название"
+            />
+            <textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              className={styles.textarea}
+              placeholder="Описание"
+            />
+            <div className={styles.modalButtons}>
+              <button
+                onClick={handleEditClose}
+                className={styles.btn__add}
+                style={{ width: 150, backgroundColor: "red" }}
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleUpdateTask}
+                className={styles.btn__add}
+                style={{ width: 150 }}
+              >
+                Сохранить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="taskList">
           {(provided) => (
@@ -78,6 +201,7 @@ const TasksPage: React.FC = () => {
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
+                      onClick={() => handleEditClick(task)}
                       style={{
                         backgroundColor: snapshot.isDragging
                           ? "#e0f7fa"
@@ -91,13 +215,14 @@ const TasksPage: React.FC = () => {
                           onClick={() => handleDeleteTask(task.id)}
                           style={{
                             position: "absolute",
-                            bottom: 13,
-                            right: -15,
+                            top: -10,
+                            right: 0,
                             background: "transparent",
                             border: "none",
                             cursor: "pointer",
                             color: "#888",
                             width: "max-content",
+                            fontSize: 30,
                           }}
                         >
                           ×
@@ -108,8 +233,8 @@ const TasksPage: React.FC = () => {
                           onChange={() => toggleTaskCompletion(task.id)}
                           style={{
                             position: "absolute",
-                            bottom: 6,
-                            right: 6,
+                            top: 2,
+                            right: 20,
                             zIndex: 1,
                             width: "max-content",
                           }}
@@ -117,14 +242,23 @@ const TasksPage: React.FC = () => {
                         <div>
                           <strong
                             style={{
-                              textDecoration: task.completed ? "line-through" : "none",
+                              textDecoration: task.completed
+                                ? "line-through"
+                                : "none",
                               display: "block",
                               paddingRight: 20,
                             }}
                           >
                             {task.title}
                           </strong>
-                          <p style={{ margin: "4px 0 0 0", color: "#555", display: "block", paddingRight: 20, }}>
+                          <p
+                            style={{
+                              margin: "4px 0 0 0",
+                              color: "#555",
+                              display: "block",
+                              paddingRight: 20,
+                            }}
+                          >
                             {task.description}
                           </p>
                         </div>

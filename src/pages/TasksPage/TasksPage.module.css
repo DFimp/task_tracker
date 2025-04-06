@@ -9,11 +9,12 @@
 .tasksList {
   list-style: none; 
   padding: 0; 
-  max-width: 350px;
+  width: 350px;
   padding: 10px;
   background-color: rgb(255, 66, 66, 0.6);
   border: 1px solid rgb(255, 66, 66);
   border-radius: 5px;
+  box-sizing: border-box;
 }
 
 .taskList__item {
@@ -21,4 +22,68 @@
   border-radius: 5px;
   padding: 12px;
   margin-bottom: 10px;
+}
+
+.btn__add {
+  width: 350px;
+  padding: 12px 24px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #07d100;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s ease-in-out;
+}
+
+.btn__add:hover {
+  background-color: #059500;
+}
+
+.btn__add:active {
+  transform: scale(0.98);
+  background-color: #047000;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 360px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;  
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.modalButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.textarea {
+  width: 300px;
+  padding: 8px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
 }
