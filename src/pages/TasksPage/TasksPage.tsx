@@ -223,7 +223,10 @@ const TasksPage: React.FC = () => {
                       >
                         <div style={{ position: "relative", paddingRight: 30 }}>
                           <button
-                            onClick={() => handleDeleteTask(task.id)}
+                            onClick={(e) => {
+                              e.stopPropagation(); 
+                              handleDeleteTask(task.id);
+                            }}
                             style={{
                               position: "absolute",
                               top: -10,
@@ -241,7 +244,8 @@ const TasksPage: React.FC = () => {
                           <input
                             type="checkbox"
                             checked={task.completed}
-                            onChange={() => toggleTaskCompletion(task.id)}
+                            onClick={(e) => e.stopPropagation()} // ← предотвращает всплытие click
+  onChange={() => toggleTaskCompletion(task.id)} 
                             style={{
                               position: "absolute",
                               top: 2,
