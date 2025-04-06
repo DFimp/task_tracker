@@ -29,7 +29,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('isAuthenticated', 'true');
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch('/api/user/logout', {
+        method: 'GET',
+        credentials: 'include', // если сессия через куки
+      });
+    } catch (error) {
+      console.error('Ошибка при выходе из аккаунта:', error);
+    }
+  
     setIsAuthenticated(false);
     localStorage.removeItem('isAuthenticated');
   };

@@ -3,6 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import styles from './AuthPage.module.css';
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
 const AuthPage: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -16,27 +18,71 @@ const AuthPage: React.FC = () => {
   const validatePassword = (pwd: string): boolean => {
     const hasMinLength = pwd.length >= 6;
     const uppercaseCount = (pwd.match(/[A-Z]/g) || []).length;
-    const hasSpecialChar = /[^A-Za-z0-9]/.test(pwd);
+    const hasSpecialChar = /[!@#$%^&*()]/.test(pwd); 
     return hasMinLength && uppercaseCount >= 2 && hasSpecialChar;
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (!email || !password) return;
+  
     if (isLogin) {
-      login();
-      navigate('/tasks');
+      // Логин
+      try {
+        const response = await fetch(`${BASE_URL}/api/user/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Ошибка входа. Проверьте данные.');
+        }
+  
+        const data = await response.json();
+        console.log('Успешный вход:', data);
+  
+        login(); // Обновляем контекст
+        navigate('/tasks');
+      } catch (error) {
+        console.error(error);
+        alert('Не удалось войти. Проверьте email и пароль.');
+      }
+  
     } else {
+      // Регистрация
       if (!validatePassword(password)) {
         setPasswordError(
-          'Пароль должен быть не менее 6 символов, содержать хотя бы две заглавные буквы и один специальный символ.'
+          'Пароль должен быть не менее 6 символов, содержать хотя бы две заглавные буквы и один специальный символ(!@#$%^&*()).'
         );
         return;
       }
-      // Здесь логика регистрации (если есть)
-      console.log('Регистрация...');
-      login(); // временно так
-      navigate('/tasks');
+  
+      try {
+        const response = await fetch(`${BASE_URL}/api/user/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Ошибка регистрации. Возможно, email уже зарегистрирован.');
+        }
+  
+        const data = await response.json();
+        console.log('Успешная регистрация:', data);
+  
+        login(); // Сразу логиним пользователя
+        navigate('/tasks');
+      } catch (error) {
+        console.error(error);
+        alert('Ошибка регистрации. Повторите позже.');
+      }
     }
-  };
+  };  
 
   const toggleAuthMode = () => {
     setIsLogin(prev => !prev);
@@ -93,7 +139,7 @@ const AuthPage: React.FC = () => {
 
           </form>
         
-        <button onClick={handleLogin}>{isLogin ? 'Войти' : 'Зарегистрироваться'}</button>
+        <button className={styles.form__button} onClick={handleLogin}>{isLogin ? 'Войти' : 'Зарегистрироваться'}</button>
         
         <div className={styles.wrapperForm__text}>
           {isLogin ? 'Если у вас нет аккаунта, пройдите ' : 'Если у вас уже есть аккаунт, '}
