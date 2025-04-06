@@ -12,26 +12,63 @@ type Task = {
   updated_at: string;
 };
 
+type PomodoroStat = {
+  taskId: number;
+  taskTitle: string;
+  description: string;
+  creationDate: string;
+  timeSpentMinutes: number;
+};
+
+type CombinedTask = Task & {
+  timeSpentMinutes?: number;
+};
+
 const ReportPage: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+  const [userId, setUserId] = useState<number | null>(null);
+  const [tasks, setTasks] = useState<CombinedTask[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<CombinedTask[]>([]);
   const [filter, setFilter] = useState<"day" | "week" | "month" | "all">("all");
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    const loadData = async () => {
       try {
-        const response = await fetch("/api/tasks", {
+        // Получаем пользователя
+        const userRes = await fetch("/api/user/get_current", {
           credentials: "include",
         });
-        const data = await response.json();
-        setTasks(data);
-        setFilteredTasks(data);
+        const user = await userRes.json();
+        setUserId(user.id);
+
+        // Загружаем задачи
+        const tasksRes = await fetch("/api/tasks", {
+          credentials: "include",
+        });
+        const tasksData: Task[] = await tasksRes.json();
+
+        // Загружаем статистику
+        const statsRes = await fetch(
+          `http://212.41.30.156:7000/pomodoro/get-pomodoro-stats?userId=${user.id}`
+        );
+        const statsData: PomodoroStat[] = await statsRes.json();
+
+        // Объединяем по taskId
+        const merged = tasksData.map((task) => {
+          const stat = statsData.find((s) => s.taskId === task.id);
+          return {
+            ...task,
+            timeSpentMinutes: stat?.timeSpentMinutes ?? 0,
+          };
+        });
+
+        setTasks(merged);
+        setFilteredTasks(merged);
       } catch (error) {
-        console.error("Ошибка при загрузке задач:", error);
+        console.error("Ошибка при загрузке данных:", error);
       }
     };
 
-    fetchTasks();
+    loadData();
   }, []);
 
   const filterTasks = (mode: "day" | "week" | "month" | "all") => {
@@ -94,24 +131,28 @@ const ReportPage: React.FC = () => {
           </button>
         </div>
 
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Название задачи</th>
-              <th>Выполнена</th>
-              <th>Дата создания</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTasks.map((task) => (
-              <tr key={task.id}>
-                <td>{task.title}</td>
-                <td>{task.is_completed ? "Да" : "Нет"}</td>
-                <td>{new Date(task.created_at).toLocaleString()}</td>
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Название задачи</th>
+                <th>Выполнена</th>
+                <th>Дата создания</th>
+                <th>Затраченное время (мин)</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredTasks.map((task) => (
+                <tr key={task.id}>
+                  <td>{task.title}</td>
+                  <td>{task.is_completed ? "Да" : "Нет"}</td>
+                  <td>{new Date(task.created_at).toLocaleString()}</td>
+                  <td>{task.timeSpentMinutes?.toFixed(2) ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

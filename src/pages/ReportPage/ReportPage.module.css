@@ -30,6 +30,11 @@
   background-color: #07d100 !important;
 }
 
+.tableWrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
