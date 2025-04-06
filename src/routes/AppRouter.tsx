@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthPage from '../pages/AuthPage/AuthPage';
-import TasksPage from '../pages/TasksPage';
+import TasksPage from '../pages/TasksPage/TasksPage';
 import PomodoroPage from '../pages/PomodoroPage';
 import ReportPage from '../pages/ReportPage';
 import PrivateRoute from './PrivateRoute';
