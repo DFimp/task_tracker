@@ -10,7 +10,10 @@ const Header = () => {
   return (
     <header className={styles.header}>
       <div className={styles.center}>
-        <button onClick={() => navigate('/report')} className={styles.reportButton}>
+        <button onClick={() => navigate('/tasks')} className={styles.navButton}>
+          Задачи
+        </button>
+        <button onClick={() => navigate('/report')} className={styles.navButton}>
           Отчёт
         </button>
       </div>
