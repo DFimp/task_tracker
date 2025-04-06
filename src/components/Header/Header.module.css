@@ -1,10 +1,21 @@
 .header {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
+  position: relative;
   padding: 10px 20px;
   background-color: #f0f0f0;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.right {
+  margin-left: auto;
 }
 
 .logoutButton {
@@ -19,4 +30,18 @@
 
 .logoutButton:hover {
   background-color: #ff7875;
+}
+
+.reportButton {
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.reportButton:hover {
+  background-color: #40a9ff;
 }
