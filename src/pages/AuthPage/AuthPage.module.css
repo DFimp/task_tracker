@@ -115,3 +115,9 @@ input:focus {
   width: 100%;
   max-width: 300px;
 }
+
+.successText {
+  color: green;
+  margin-top: 10px;
+  width: 300px;
+}

@@ -6,6 +6,8 @@ import PomodoroPage from '../pages/PomodoroPage';
 import ReportPage from '../pages/ReportPage';
 import PrivateRoute from './PrivateRoute';
 import PublicRoute from './PublicRoute';
+import ResetPasswordPage from '../pages/ResetPasswordPage/ResetPasswordPage';
+
 
 const AppRouter: React.FC = () => {
   return (
@@ -22,7 +24,10 @@ const AppRouter: React.FC = () => {
         }
       />
       
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      
       <Route path="/" element={<Navigate to="/auth" />} />
+      
       <Route
         path="/auth"
         element={
