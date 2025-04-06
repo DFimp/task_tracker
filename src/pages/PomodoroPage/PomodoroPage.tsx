@@ -141,9 +141,25 @@ const PomodoroPage: React.FC = () => {
     setSessionFinished(true);
   };
 
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isRunning) {
+        e.preventDefault();
+        e.returnValue = ""; // для некоторых браузеров
+      }
+    };
+  
+    window.addEventListener("beforeunload", handleBeforeUnload);
+  
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isRunning]);
+  
+
   return (
     <>
-      <Header />
+      <Header locked={isRunning} />
       <div className={styles.wrapper}>
         <div className={styles.form}>
           <h2 className={styles.title}>Задача: {task?.title}</h2>
