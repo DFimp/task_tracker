@@ -7,6 +7,7 @@ import {
 } from "@hello-pangea/dnd";
 import styles from "./TasksPage.module.css";
 import Header from "../../components/Header/Header";
+import { useNavigate } from "react-router-dom";
 
 type Task = {
   id: string;
@@ -16,6 +17,8 @@ type Task = {
 };
 
 const TasksPage: React.FC = () => {
+  const navigate = useNavigate();
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -303,7 +306,7 @@ const TasksPage: React.FC = () => {
               </div>
 
               <button
-                onClick={() => (window.location.href = "/pomodoro")}
+                onClick={() => navigate(`/pomodoro/${editingTask.id}`)}
                 className={styles.btn__add}
                 style={{ width: "310px", backgroundColor: "#007acc" }}
               >

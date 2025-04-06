@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthPage from '../pages/AuthPage/AuthPage';
 import TasksPage from '../pages/TasksPage/TasksPage';
-import PomodoroPage from '../pages/PomodoroPage';
+import PomodoroPage from '../pages/PomodoroPage/PomodoroPage';
 import ReportPage from '../pages/ReportPage/ReportPage';
 import PrivateRoute from './PrivateRoute';
 import PublicRoute from './PublicRoute';
@@ -46,7 +46,7 @@ const AppRouter: React.FC = () => {
         }
       />
       <Route
-        path="/pomodoro"
+        path="/pomodoro/:id"
         element={
           <PrivateRoute>
             <PomodoroPage />
