@@ -27,6 +27,7 @@ const TasksPage: React.FC = () => {
         });
         const data = await response.json();
         setTasks(data);
+        setInitialTasks(data); 
       } catch (error) {
         console.error("Ошибка при загрузке задач:", error);
       } finally {
@@ -36,6 +37,9 @@ const TasksPage: React.FC = () => {
 
     fetchTasks();
   }, []);
+
+  const [initialTasks, setInitialTasks] = useState<Task[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -53,6 +57,10 @@ const TasksPage: React.FC = () => {
     const [moved] = updated.splice(source.index, 1);
     updated.splice(destination.index, 0, moved);
     setTasks(updated);
+
+    // Сравниваем текущий и начальный порядок
+    const changed = updated.some((task, i) => task.id !== initialTasks[i]?.id);
+    setHasChanges(changed);
   };
 
   const toggleTaskCompletion = async (id: string) => {
@@ -178,6 +186,40 @@ const TasksPage: React.FC = () => {
     setEditingTask(null);
   };
 
+  const handleSaveOrder = async () => {
+    try {
+      // Выполняем последовательный PUT для каждой задачи
+      for (let i = 0; i < tasks.length; i++) {
+        const task = tasks[i];
+  
+        const response = await fetch(`/api/tasks/${task.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            title: task.title,
+            description: task.description,
+            is_completed: task.is_completed,
+            priority: i, // Новый приоритет — это индекс в массиве
+          }),
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Ошибка при обновлении задачи ID ${task.id}`);
+        }
+      }
+  
+      // После успешного обновления всех задач:
+      setInitialTasks([...tasks]);
+      setHasChanges(false);
+      console.log("Порядок успешно сохранён");
+    } catch (error) {
+      console.error("Ошибка сохранения порядка:", error);
+    }
+  };  
+
   return (
     <div>
       <Header />
@@ -269,6 +311,16 @@ const TasksPage: React.FC = () => {
               </button>
             </div>
           </div>
+        )}
+
+        {hasChanges && (
+          <button
+            onClick={handleSaveOrder}
+            className={styles.btn__add}
+            style={{ margin: "10px 0", backgroundColor: "#4caf50", color: "#fff" }}
+          >
+            Сохранить изменения
+          </button>
         )}
 
         {!isLoading && tasks.length === 0 ? (
