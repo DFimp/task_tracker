@@ -1,7 +1,9 @@
 import React from 'react';
+import Header from "../components/Header/Header";
 
 const PomodoroPage: React.FC = () => {
-  return <h2>Страница помидора</h2>;
+  
+  return <Header />;
 };
 
 export default PomodoroPage;

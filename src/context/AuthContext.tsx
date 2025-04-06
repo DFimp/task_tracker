@@ -6,6 +6,8 @@ interface AuthContextType {
   logout: () => void;
 }
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
@@ -31,7 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await fetch('/api/user/logout', {
+      await fetch(`${BASE_URL}/api/user/logout`, {
         method: 'GET',
         credentials: 'include', // если сессия через куки
       });

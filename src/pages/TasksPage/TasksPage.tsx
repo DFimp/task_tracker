@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DragDropContext,
   Droppable,
@@ -15,29 +15,29 @@ type Task = {
   completed: boolean;
 };
 
-const initialTasks: Task[] = [
-  {
-    id: "1",
-    title: "Сделать кофе",
-    description: "Использовать арабику",
-    completed: false,
-  },
-  {
-    id: "2",
-    title: "Написать отчёт",
-    description: "Отчёт по кварталу",
-    completed: true,
-  },
-  {
-    id: "3",
-    title: "Проверить почту",
-    description: "Ответить на важные письма",
-    completed: false,
-  },
-];
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const TasksPage: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch("/api/tasks", {
+          credentials: "include"
+        });
+        const data = await response.json();
+        setTasks(data);
+      } catch (error) {
+        console.error("Ошибка при загрузке задач:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -68,18 +68,33 @@ const TasksPage: React.FC = () => {
     setTasks((prev) => prev.filter((task) => task.id !== id));
   };
 
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (!newTitle.trim()) return;
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: newTitle,
-      description: newDescription,
-      completed: false,
-    };
-    setTasks((prev) => [newTask, ...prev]);
-    setNewTitle("");
-    setNewDescription("");
-    setModalOpen(false);
+
+    try {
+      const response = await fetch(`/api/tasks`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: newTitle,
+          description: newDescription,
+          priority: 0,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Ошибка при создании задачи");
+
+      const newTask = await response.json();
+      setTasks((prev) => [newTask, ...prev]);
+      setNewTitle("");
+      setNewDescription("");
+      setModalOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleEditClick = (task: Task) => {
@@ -197,96 +212,108 @@ const TasksPage: React.FC = () => {
           </div>
         )}
 
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="taskList">
-            {(provided) => (
-              <ul
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                className={styles.tasksList}
-              >
-                {tasks.map((task, index) => (
-                  <Draggable key={task.id} draggableId={task.id} index={index}>
-                    {(provided, snapshot) => (
-                      <li
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        onClick={() => handleEditClick(task)}
-                        style={{
-                          backgroundColor: snapshot.isDragging
-                            ? "#e0f7fa"
-                            : "#fafafa",
-                          ...provided.draggableProps.style,
-                        }}
-                        className={styles.taskList__item}
-                      >
-                        <div style={{ position: "relative", paddingRight: 30 }}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation(); 
-                              handleDeleteTask(task.id);
-                            }}
-                            style={{
-                              position: "absolute",
-                              top: -10,
-                              right: 0,
-                              background: "transparent",
-                              border: "none",
-                              cursor: "pointer",
-                              color: "#888",
-                              width: "max-content",
-                              fontSize: 30,
-                            }}
+        {!isLoading && tasks.length === 0 ? (
+          <p style={{ padding: "20px", fontStyle: "italic", color: "#666" }}>
+            Задач нет
+          </p>
+        ) : (
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="taskList">
+              {(provided) => (
+                <ul
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className={styles.tasksList}
+                >
+                  {tasks.map((task, index) => (
+                    <Draggable
+                      key={task.id}
+                      draggableId={task.id}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <li
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          onClick={() => handleEditClick(task)}
+                          style={{
+                            backgroundColor: snapshot.isDragging
+                              ? "#e0f7fa"
+                              : "#fafafa",
+                            ...provided.draggableProps.style,
+                          }}
+                          className={styles.taskList__item}
+                        >
+                          <div
+                            style={{ position: "relative", paddingRight: 30 }}
                           >
-                            ×
-                          </button>
-                          <input
-                            type="checkbox"
-                            checked={task.completed}
-                            onClick={(e) => e.stopPropagation()} 
-                            onChange={() => toggleTaskCompletion(task.id)} 
-                            style={{
-                              position: "absolute",
-                              top: 2,
-                              right: 20,
-                              zIndex: 1,
-                              width: "max-content",
-                            }}
-                          />
-                          <div>
-                            <strong
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteTask(task.id);
+                              }}
                               style={{
-                                textDecoration: task.completed
-                                  ? "line-through"
-                                  : "none",
-                                display: "block",
-                                paddingRight: 20,
+                                position: "absolute",
+                                top: -10,
+                                right: 0,
+                                background: "transparent",
+                                border: "none",
+                                cursor: "pointer",
+                                color: "#888",
+                                width: "max-content",
+                                fontSize: 30,
                               }}
                             >
-                              {task.title}
-                            </strong>
-                            <p
+                              ×
+                            </button>
+                            <input
+                              type="checkbox"
+                              checked={task.completed}
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={() => toggleTaskCompletion(task.id)}
                               style={{
-                                margin: "4px 0 0 0",
-                                color: "#555",
-                                display: "block",
-                                paddingRight: 20,
+                                position: "absolute",
+                                top: 2,
+                                right: 20,
+                                zIndex: 1,
+                                width: "max-content",
                               }}
-                            >
-                              {task.description}
-                            </p>
+                            />
+                            <div>
+                              <strong
+                                style={{
+                                  textDecoration: task.completed
+                                    ? "line-through"
+                                    : "none",
+                                  display: "block",
+                                  paddingRight: 20,
+                                }}
+                              >
+                                {task.title}
+                              </strong>
+                              <p
+                                style={{
+                                  margin: "4px 0 0 0",
+                                  color: "#555",
+                                  display: "block",
+                                  paddingRight: 20,
+                                }}
+                              >
+                                {task.description}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </li>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </ul>
-            )}
-          </Droppable>
-        </DragDropContext>
+                        </li>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </ul>
+              )}
+            </Droppable>
+          </DragDropContext>
+        )}
       </div>
     </div>
   );
