@@ -1,0 +1,19 @@
+.authPage {
+  display: flex;
+  justify-content: center; /* по горизонтали */
+  align-items: center;     /* по вертикали */
+  height: 100vh;
+  background-color: #f5f5f5;
+  flex-direction: column;  /* чтобы элементы шли сверху вниз */
+}
+
+.text {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
