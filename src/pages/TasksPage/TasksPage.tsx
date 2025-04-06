@@ -145,6 +145,7 @@ const TasksPage: React.FC = () => {
                 Добавить
               </button>
             </div>
+
           </div>
         </div>
       )}
@@ -182,6 +183,14 @@ const TasksPage: React.FC = () => {
                 Сохранить
               </button>
             </div>
+
+            <button
+              onClick={() => window.location.href = '/pomodoro'}
+              className={styles.btn__add}
+              style={{ width: '310px', backgroundColor: "#007acc" }}
+            >
+              Таймер помидоро
+            </button>
           </div>
         </div>
       )}
