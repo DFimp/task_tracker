@@ -6,6 +6,7 @@ import {
   DropResult,
 } from "@hello-pangea/dnd";
 import styles from "./TasksPage.module.css";
+import Header from "../../components/Header/Header";
 
 type Task = {
   id: string;
@@ -104,183 +105,185 @@ const TasksPage: React.FC = () => {
   };
 
   return (
-    <div className={styles.pageTasksList}>
-      <h2>Список задач</h2>
-      <span>Чем выше задача, тем выше приоритет</span>
+    <div>
+      <Header />
+      <div className={styles.pageTasksList}>
+        <h2>Список задач</h2>
+        <span>Чем выше задача, тем выше приоритет</span>
 
-      <button onClick={() => setModalOpen(true)} className={styles.btn__add}>
-        Добавить задачу
-      </button>
+        <button onClick={() => setModalOpen(true)} className={styles.btn__add}>
+          Добавить задачу
+        </button>
 
-      {isModalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <h3>Новая задача</h3>
-            <input
-              type="text"
-              placeholder="Название"
-              value={newTitle}
-              className={styles.input}
-              onChange={(e) => setNewTitle(e.target.value)}
-            />
-            <textarea
-              placeholder="Описание"
-              value={newDescription}
-              onChange={(e) => setNewDescription(e.target.value)}
-              className={styles.textarea}
-            />
-            <div className={styles.modalButtons}>
+        {isModalOpen && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <h3>Новая задача</h3>
+              <input
+                type="text"
+                placeholder="Название"
+                value={newTitle}
+                className={styles.input}
+                onChange={(e) => setNewTitle(e.target.value)}
+              />
+              <textarea
+                placeholder="Описание"
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                className={styles.textarea}
+              />
+              <div className={styles.modalButtons}>
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className={styles.btn__add}
+                  style={{ width: 150, backgroundColor: "red" }}
+                >
+                  Отмена
+                </button>
+                <button
+                  onClick={handleAddTask}
+                  className={styles.btn__add}
+                  style={{ width: 150 }}
+                >
+                  Добавить
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingTask && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <h3>Редактировать задачу</h3>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className={styles.input}
+                placeholder="Название"
+              />
+              <textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className={styles.textarea}
+                placeholder="Описание"
+              />
+              <div className={styles.modalButtons}>
+                <button
+                  onClick={handleEditClose}
+                  className={styles.btn__add}
+                  style={{ width: 150, backgroundColor: "red" }}
+                >
+                  Отмена
+                </button>
+                <button
+                  onClick={handleUpdateTask}
+                  className={styles.btn__add}
+                  style={{ width: 150 }}
+                >
+                  Сохранить
+                </button>
+              </div>
+
               <button
-                onClick={() => setModalOpen(false)}
+                onClick={() => (window.location.href = "/pomodoro")}
                 className={styles.btn__add}
-                style={{ width: 150, backgroundColor: "red" }}
+                style={{ width: "310px", backgroundColor: "#007acc" }}
               >
-                Отмена
-              </button>
-              <button
-                onClick={handleAddTask}
-                className={styles.btn__add}
-                style={{ width: 150 }}
-              >
-                Добавить
+                Таймер помидоро
               </button>
             </div>
-
           </div>
-        </div>
-      )}
+        )}
 
-      {editingTask && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <h3>Редактировать задачу</h3>
-            <input
-              type="text"
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              className={styles.input}
-              placeholder="Название"
-            />
-            <textarea
-              value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
-              className={styles.textarea}
-              placeholder="Описание"
-            />
-            <div className={styles.modalButtons}>
-              <button
-                onClick={handleEditClose}
-                className={styles.btn__add}
-                style={{ width: 150, backgroundColor: "red" }}
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="taskList">
+            {(provided) => (
+              <ul
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className={styles.tasksList}
               >
-                Отмена
-              </button>
-              <button
-                onClick={handleUpdateTask}
-                className={styles.btn__add}
-                style={{ width: 150 }}
-              >
-                Сохранить
-              </button>
-            </div>
-
-            <button
-              onClick={() => window.location.href = '/pomodoro'}
-              className={styles.btn__add}
-              style={{ width: '310px', backgroundColor: "#007acc" }}
-            >
-              Таймер помидоро
-            </button>
-          </div>
-        </div>
-      )}
-
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="taskList">
-          {(provided) => (
-            <ul
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className={styles.tasksList}
-            >
-              {tasks.map((task, index) => (
-                <Draggable key={task.id} draggableId={task.id} index={index}>
-                  {(provided, snapshot) => (
-                    <li
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      onClick={() => handleEditClick(task)}
-                      style={{
-                        backgroundColor: snapshot.isDragging
-                          ? "#e0f7fa"
-                          : "#fafafa",
-                        ...provided.draggableProps.style,
-                      }}
-                      className={styles.taskList__item}
-                    >
-                      <div style={{ position: "relative", paddingRight: 30 }}>
-                        <button
-                          onClick={() => handleDeleteTask(task.id)}
-                          style={{
-                            position: "absolute",
-                            top: -10,
-                            right: 0,
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            color: "#888",
-                            width: "max-content",
-                            fontSize: 30,
-                          }}
-                        >
-                          ×
-                        </button>
-                        <input
-                          type="checkbox"
-                          checked={task.completed}
-                          onChange={() => toggleTaskCompletion(task.id)}
-                          style={{
-                            position: "absolute",
-                            top: 2,
-                            right: 20,
-                            zIndex: 1,
-                            width: "max-content",
-                          }}
-                        />
-                        <div>
-                          <strong
+                {tasks.map((task, index) => (
+                  <Draggable key={task.id} draggableId={task.id} index={index}>
+                    {(provided, snapshot) => (
+                      <li
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        onClick={() => handleEditClick(task)}
+                        style={{
+                          backgroundColor: snapshot.isDragging
+                            ? "#e0f7fa"
+                            : "#fafafa",
+                          ...provided.draggableProps.style,
+                        }}
+                        className={styles.taskList__item}
+                      >
+                        <div style={{ position: "relative", paddingRight: 30 }}>
+                          <button
+                            onClick={() => handleDeleteTask(task.id)}
                             style={{
-                              textDecoration: task.completed
-                                ? "line-through"
-                                : "none",
-                              display: "block",
-                              paddingRight: 20,
+                              position: "absolute",
+                              top: -10,
+                              right: 0,
+                              background: "transparent",
+                              border: "none",
+                              cursor: "pointer",
+                              color: "#888",
+                              width: "max-content",
+                              fontSize: 30,
                             }}
                           >
-                            {task.title}
-                          </strong>
-                          <p
+                            ×
+                          </button>
+                          <input
+                            type="checkbox"
+                            checked={task.completed}
+                            onChange={() => toggleTaskCompletion(task.id)}
                             style={{
-                              margin: "4px 0 0 0",
-                              color: "#555",
-                              display: "block",
-                              paddingRight: 20,
+                              position: "absolute",
+                              top: 2,
+                              right: 20,
+                              zIndex: 1,
+                              width: "max-content",
                             }}
-                          >
-                            {task.description}
-                          </p>
+                          />
+                          <div>
+                            <strong
+                              style={{
+                                textDecoration: task.completed
+                                  ? "line-through"
+                                  : "none",
+                                display: "block",
+                                paddingRight: 20,
+                              }}
+                            >
+                              {task.title}
+                            </strong>
+                            <p
+                              style={{
+                                margin: "4px 0 0 0",
+                                color: "#555",
+                                display: "block",
+                                paddingRight: 20,
+                              }}
+                            >
+                              {task.description}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </ul>
-          )}
-        </Droppable>
-      </DragDropContext>
+                      </li>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </ul>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </div>
     </div>
   );
 };
