@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthPage from '../pages/AuthPage/AuthPage';
 import TasksPage from '../pages/TasksPage/TasksPage';
 import PomodoroPage from '../pages/PomodoroPage';
-import ReportPage from '../pages/ReportPage';
+import ReportPage from '../pages/ReportPage/ReportPage';
 import PrivateRoute from './PrivateRoute';
 import PublicRoute from './PublicRoute';
 import ResetPasswordPage from '../pages/ResetPasswordPage/ResetPasswordPage';

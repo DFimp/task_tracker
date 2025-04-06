@@ -3,8 +3,6 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import styles from "./AuthPage.module.css";
 
-const BASE_URL = process.env.REACT_APP_BASE_URL;
-
 const AuthPage: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -31,7 +29,7 @@ const AuthPage: React.FC = () => {
     if (isLogin) {
       // Логин
       try {
-        const response = await fetch(`${BASE_URL}/api/user/login`, {
+        const response = await fetch(`/api/user/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -63,7 +61,7 @@ const AuthPage: React.FC = () => {
       }
 
       try {
-        const response = await fetch(`${BASE_URL}/api/user/register`, {
+        const response = await fetch(`/api/user/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -106,7 +104,7 @@ const AuthPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/api/user/reset_password`, {
+      const response = await fetch(`/api/user/reset_password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

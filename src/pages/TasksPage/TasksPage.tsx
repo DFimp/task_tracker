@@ -12,10 +12,8 @@ type Task = {
   id: string;
   title: string;
   description: string;
-  completed: boolean;
+  is_completed: boolean;
 };
-
-const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const TasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -57,15 +55,55 @@ const TasksPage: React.FC = () => {
     setTasks(updated);
   };
 
-  const toggleTaskCompletion = (id: string) => {
-    const updated = tasks.map((task) =>
-      task.id === id ? { ...task, completed: !task.completed } : task
-    );
-    setTasks(updated);
-  };
+  const toggleTaskCompletion = async (id: string) => {
+    const taskToUpdate = tasks.find((t) => t.id === id);
+    if (!taskToUpdate) return;
+  
+    const updatedTask = {
+      ...taskToUpdate,
+      is_completed: !taskToUpdate.is_completed,
+    };
+  
+    try {
+      const response = await fetch(`/api/tasks/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          title: updatedTask.title,
+          description: updatedTask.description,
+          priority: 0,
+          is_completed: updatedTask.is_completed,
+        }),
+      });
+  
+      if (!response.ok) throw new Error("Ошибка при обновлении статуса");
+  
+      const data = await response.json();
+  
+      setTasks((prev) =>
+        prev.map((task) => (task.id === id ? data : task))
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };  
 
-  const handleDeleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
+  const handleDeleteTask = async (id: string) => {
+    try {
+      const response = await fetch(`/api/tasks/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+  
+      if (!response.ok) throw new Error("Ошибка при удалении задачи");
+  
+      setTasks((prev) => prev.filter((task) => task.id !== id));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleAddTask = async () => {
@@ -103,17 +141,38 @@ const TasksPage: React.FC = () => {
     setEditDescription(task.description);
   };
 
-  const handleUpdateTask = () => {
+  const handleUpdateTask = async () => {
     if (!editingTask) return;
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === editingTask.id
-          ? { ...task, title: editTitle, description: editDescription }
-          : task
-      )
-    );
-    setEditingTask(null);
-  };
+  
+    try {
+      const response = await fetch(`/api/tasks/${editingTask.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          title: editTitle,
+          description: editDescription,
+          priority: 0, // по желанию можно сохранить приоритет
+          is_completed: editingTask.is_completed,
+        }),
+      });
+  
+      if (!response.ok) throw new Error("Ошибка при обновлении задачи");
+  
+      const updatedTask = await response.json();
+  
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === editingTask.id ? updatedTask : task
+        )
+      );
+      setEditingTask(null);
+    } catch (error) {
+      console.error(error);
+    }
+  };  
 
   const handleEditClose = () => {
     setEditingTask(null);
@@ -227,8 +286,8 @@ const TasksPage: React.FC = () => {
                 >
                   {tasks.map((task, index) => (
                     <Draggable
-                      key={task.id}
-                      draggableId={task.id}
+                      key={String(task.id)}
+                      draggableId={String(task.id)}
                       index={index}
                     >
                       {(provided, snapshot) => (
@@ -269,7 +328,7 @@ const TasksPage: React.FC = () => {
                             </button>
                             <input
                               type="checkbox"
-                              checked={task.completed}
+                              checked={task.is_completed}
                               onClick={(e) => e.stopPropagation()}
                               onChange={() => toggleTaskCompletion(task.id)}
                               style={{
@@ -283,7 +342,7 @@ const TasksPage: React.FC = () => {
                             <div>
                               <strong
                                 style={{
-                                  textDecoration: task.completed
+                                  textDecoration: task.is_completed
                                     ? "line-through"
                                     : "none",
                                   display: "block",
