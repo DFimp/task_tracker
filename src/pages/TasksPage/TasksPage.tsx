@@ -244,8 +244,8 @@ const TasksPage: React.FC = () => {
                           <input
                             type="checkbox"
                             checked={task.completed}
-                            onClick={(e) => e.stopPropagation()} // ← предотвращает всплытие click
-  onChange={() => toggleTaskCompletion(task.id)} 
+                            onClick={(e) => e.stopPropagation()} 
+                            onChange={() => toggleTaskCompletion(task.id)} 
                             style={{
                               position: "absolute",
                               top: 2,
